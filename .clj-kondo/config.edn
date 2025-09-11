@@ -1,0 +1,5 @@
+{:lint-as {potemkin.namespaces/import-vars clojure.core/declare
+           manifold.deferred/let-flow clojure.core/let
+           manifold.deferred/chain clojure.core/->
+           manifold.stream/consume clojure.core/doseq}
+ :linters {:missing-docstring {:level :warning}}}

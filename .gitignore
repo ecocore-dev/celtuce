@@ -9,3 +9,5 @@ pom.xml.asc
 /.nrepl-port
 *.iml
 .idea
+.clj-kondo/.cache/
+.clj-kondo/v1/
