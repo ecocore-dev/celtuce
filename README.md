@@ -1,27 +1,41 @@
 # celtuce
 
+> **Note**: This is a fork of the original [celtuce library](https://github.com/lerouxrgd/celtuce) by lerouxrgd. 
+> The original repository has been archived, and this fork is maintained by [EcoCore Development](https://github.com/ecocore-dev) 
+> to continue development and support.
+
 An idiomatic Clojure Redis client wrapping the Java client [Lettuce][].
 
 ## Usage
 
- [![Clojars Project](https://img.shields.io/clojars/v/celtuce.svg)](https://clojars.org/celtuce) to include all [modules][].
+Add to your `deps.edn`:
+```clojure
+dev.ecocore/celtuce {:mvn/version "VERSION"}
+```
+
+Or to your `project.clj`:
+```clojure
+[dev.ecocore/celtuce "VERSION"]
+```
+
+[![Clojars Project](https://img.shields.io/clojars/v/dev.ecocore/celtuce.svg)](https://clojars.org/dev.ecocore/celtuce) to include all [modules][].
 
 Or pick up only the ones you need:
 
 * [celtuce-core][]: Main module with all the core functionalities (required)
 
-  [![Clojars Project](https://img.shields.io/clojars/v/celtuce-core.svg)](https://clojars.org/celtuce-core)
-  [![cljdoc badge](https://cljdoc.org/badge/celtuce-core/celtuce-core)](https://cljdoc.org/d/celtuce-core/celtuce-core/CURRENT)
+  [![Clojars Project](https://img.shields.io/clojars/v/dev.ecocore/celtuce-core.svg)](https://clojars.org/dev.ecocore/celtuce-core)
+  [![cljdoc badge](https://cljdoc.org/badge/dev.ecocore/celtuce-core)](https://cljdoc.org/d/dev.ecocore/celtuce-core/CURRENT)
 
 * [celtuce-pool][]: Provides pooling for connections
 
-  [![Clojars Project](https://img.shields.io/clojars/v/celtuce-pool.svg)](https://clojars.org/celtuce-pool)
-  [![cljdoc badge](https://cljdoc.org/badge/celtuce-pool/celtuce-pool)](https://cljdoc.org/d/celtuce-pool/celtuce-pool/CURRENT)
+  [![Clojars Project](https://img.shields.io/clojars/v/dev.ecocore/celtuce-pool.svg)](https://clojars.org/dev.ecocore/celtuce-pool)
+  [![cljdoc badge](https://cljdoc.org/badge/dev.ecocore/celtuce-pool)](https://cljdoc.org/d/dev.ecocore/celtuce-pool/CURRENT)
 
 * [celtuce-manifold][]: Implementation of asynchronous commands based on [Manifold][]
 
-  [![Clojars Project](https://img.shields.io/clojars/v/celtuce-manifold.svg)](https://clojars.org/celtuce-manifold)
-  [![cljdoc badge](https://cljdoc.org/badge/celtuce-manifold/celtuce-manifold)](https://cljdoc.org/d/celtuce-manifold/celtuce-manifold/CURRENT)
+  [![Clojars Project](https://img.shields.io/clojars/v/dev.ecocore/celtuce-manifold.svg)](https://clojars.org/dev.ecocore/celtuce-manifold)
+  [![cljdoc badge](https://cljdoc.org/badge/dev.ecocore/celtuce-manifold)](https://cljdoc.org/d/dev.ecocore/celtuce-manifold/CURRENT)
 
 ### Redis Connectors
 
@@ -148,12 +162,12 @@ lein test
 [client-options]: https://github.com/lettuce-io/lettuce-core/wiki/Client-options
 [dynamic]: https://github.com/lettuce-io/lettuce-core/wiki/Redis-Command-Interfaces
 
-[modules]: https://github.com/lerouxrgd/celtuce/tree/master/modules
-[commands]: https://github.com/lerouxrgd/celtuce/blob/master/modules/celtuce-core/src/celtuce/commands.clj
-[celtuce-core]: https://github.com/lerouxrgd/celtuce/tree/master/modules/celtuce-core
-[celtuce-pool]: https://github.com/lerouxrgd/celtuce/tree/master/modules/celtuce-pool
-[celtuce-manifold]: https://github.com/lerouxrgd/celtuce/tree/master/modules/celtuce-manifold
-[tests-connector]: https://github.com/lerouxrgd/celtuce/blob/master/test/celtuce/connector_test.clj
+[modules]: https://github.com/ecocore-dev/celtuce/tree/master/modules
+[commands]: https://github.com/ecocore-dev/celtuce/blob/master/modules/celtuce-core/src/celtuce/commands.clj
+[celtuce-core]: https://github.com/ecocore-dev/celtuce/tree/master/modules/celtuce-core
+[celtuce-pool]: https://github.com/ecocore-dev/celtuce/tree/master/modules/celtuce-pool
+[celtuce-manifold]: https://github.com/ecocore-dev/celtuce/tree/master/modules/celtuce-manifold
+[tests-connector]: https://github.com/ecocore-dev/celtuce/blob/master/test/celtuce/connector_test.clj
 
 [nippy]: https://github.com/ptaoussanis/nippy
 [manifold]: https://github.com/ztellman/manifold

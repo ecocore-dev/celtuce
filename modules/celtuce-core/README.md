@@ -5,7 +5,7 @@ Provides core functionalities and an implementation for synchronous commands.
 
 ## Usage
 
-[![Clojars Project](https://img.shields.io/clojars/v/celtuce-core.svg)](https://clojars.org/celtuce-core)
+[![Clojars Project](https://img.shields.io/clojars/v/dev.ecocore/celtuce-core.svg)](https://clojars.org/dev.ecocore/celtuce-core)
 
 ## License
 

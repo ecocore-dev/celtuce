@@ -4,7 +4,7 @@ Module that provides [connection pooling][conn-pool] for `connector`s.
 
 ## Usage
 
-[![Clojars Project](https://img.shields.io/clojars/v/celtuce-pool.svg)](https://clojars.org/celtuce-pool)
+[![Clojars Project](https://img.shields.io/clojars/v/dev.ecocore/celtuce-pool.svg)](https://clojars.org/dev.ecocore/celtuce-pool)
 
 Pooling connections is particularly useful for transactions or long running time commands
 (so that other threads can use different connections in the meantime).

@@ -4,7 +4,7 @@ Module that provides an implementation for asynchronous commands based on [Manif
 
 ## Usage
 
-[![Clojars Project](https://img.shields.io/clojars/v/celtuce-manifold.svg)](https://clojars.org/celtuce-manifold)
+[![Clojars Project](https://img.shields.io/clojars/v/dev.ecocore/celtuce-manifold.svg)](https://clojars.org/dev.ecocore/celtuce-manifold)
 
 Commands are wrapped in Manifold's `deferred` which allows for flexible composition of asynchronous results.
 
