@@ -2,6 +2,7 @@
 (defproject dev.ecocore/celtuce-core celtuce-version
   :description "An idiomatic Clojure Redis client wrapping the Java client Lettuce"
   :url "https://github.com/ecocore-dev/celtuce"
+  :scm {:dir ".."}
   :license {:name "Apache License 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[org.clojure/clojure ~clj-version]

@@ -1,6 +1,7 @@
 (load-file "../../.deps-versions.clj")
 (defproject dev.ecocore/celtuce-pool celtuce-version
   :url "https://github.com/ecocore-dev/celtuce"
+  :scm {:dir ".."}
   :license {:name "Apache License 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[org.clojure/clojure ~clj-version]
