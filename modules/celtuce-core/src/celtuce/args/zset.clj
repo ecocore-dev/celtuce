@@ -17,7 +17,7 @@
    Aggregation options: :sum, :min, :max. Weights are applied to corresponding sets."
   [agg & weights]
   (cond-> (ZStoreArgs.)
-    (not (empty? weights)) (.weights ^doubles (into-array Double/TYPE weights))
+    (seq weights) (.weights ^doubles (into-array Double/TYPE weights))
     (= :sum agg) (.sum)
     (= :min agg) (.min)
     (= :max agg) (.max)))
