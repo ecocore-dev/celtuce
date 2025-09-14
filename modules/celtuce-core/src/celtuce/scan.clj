@@ -5,7 +5,7 @@
     KeyScanCursor ValueScanCursor MapScanCursor ScoredValueScanCursor
     KeyValue ScoredValue)))
 
-(defn ^ScanArgs scan-args [& {limit :limit match :match}]
+(defn scan-args ^ScanArgs [& {limit :limit match :match}]
   (cond-> (ScanArgs.)
     limit (.limit (long limit))
     match (.match ^String match)))
@@ -38,10 +38,10 @@
          (map (fn [^ScoredValue sv] [(.getScore sv) (.getValue sv)]))
          (into []))))
 
-(defn ^ScanCursor scan-cursor 
-  ([]
+(defn scan-cursor
+  (^ScanCursor []
    ScanCursor/INITIAL)
-  ([cursor]
+  (^ScanCursor [cursor]
    (doto (ScanCursor.)
      (.setCursor cursor))))
 

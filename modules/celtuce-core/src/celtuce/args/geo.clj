@@ -3,7 +3,9 @@
    (io.lettuce.core
     GeoArgs GeoArgs$Unit GeoArgs$Sort GeoRadiusStoreArgs)))
 
-(defn ^GeoArgs$Unit ->unit [u]
+(defn ->unit
+  ^GeoArgs$Unit
+  [u]
   (case u
     :m  GeoArgs$Unit/m
     :km GeoArgs$Unit/km
@@ -11,7 +13,9 @@
     :mi GeoArgs$Unit/mi
     (throw (ex-info "Invalid Unit" {:unit u :valids #{:m :km :ft :mi}}))))
 
-(defn ^GeoArgs$Sort ->sort [s]
+(defn ->sort
+  ^GeoArgs$Sort
+  [s]
   (case s
     :asc   GeoArgs$Sort/asc
     :desc  GeoArgs$Sort/desc

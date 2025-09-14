@@ -17,7 +17,7 @@
     (.get bb bytes)
     bytes))
 
-(defn ^ByteBuffer bytes->bb [^bytes b]
+(defn bytes->bb ^ByteBuffer [^bytes b]
   (ByteBuffer/wrap b))
 
 ;; Lettuce codecs

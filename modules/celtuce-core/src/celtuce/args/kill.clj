@@ -2,7 +2,10 @@
   (:import 
    (io.lettuce.core KillArgs KillArgs$Builder)))
 
-(defn ^KillArgs kill-args [& {skipme :skipme addr :addr id :id type :type}]
+
+(defn kill-args
+  ^KillArgs
+  [& {skipme :skipme addr :addr id :id type :type}]
   {:pre [(or (nil? type)
              (#{:pubsub :normal :slave} type))]}
   (-> (if type
@@ -15,4 +18,3 @@
           skipme (.skipme skipme)
           addr   (.addr addr)
           id     (.id id))))
-

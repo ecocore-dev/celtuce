@@ -25,8 +25,9 @@
   (close [_]
     (.close conn-pool)))
 
-(defn ^GenericObjectPoolConfig pool-config
+(defn pool-config
   "Internal helper to build GenericObjectPoolConfig from a map"
+  ^GenericObjectPoolConfig
   [{:keys [max-total max-idle min-idle]
     :or {max-total GenericObjectPoolConfig/DEFAULT_MAX_TOTAL
          max-idle  GenericObjectPoolConfig/DEFAULT_MAX_IDLE

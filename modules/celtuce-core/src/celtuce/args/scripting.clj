@@ -2,7 +2,7 @@
   (:import 
    (io.lettuce.core ScriptOutputType)))
 
-(defn ^ScriptOutputType output-type [t]
+(defn output-type ^ScriptOutputType [t]
   (case t
     :boolean ScriptOutputType/BOOLEAN
     :integer ScriptOutputType/INTEGER

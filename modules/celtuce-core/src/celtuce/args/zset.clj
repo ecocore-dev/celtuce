@@ -2,7 +2,7 @@
   (:import
    (io.lettuce.core ZAddArgs ZAddArgs$Builder ZStoreArgs)))
 
-(defn ^ZAddArgs zadd-args [opt]
+(defn zadd-args ^ZAddArgs [opt]
   (case opt
     :nx (ZAddArgs$Builder/nx)
     :xx (ZAddArgs$Builder/xx)
