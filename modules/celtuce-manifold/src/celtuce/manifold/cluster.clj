@@ -307,8 +307,9 @@
      (d/->deferred (.sscan this k)))
     ([this k ^ScanCursor c]
      (d/->deferred (.sscan this k c)))
-    ([this k ^ScanCursor c args]
-     (d/->deferred (.sscan this k c))))
+    ([this k ^ScanCursor c _args]
+     ;; FIXME: investigate why protocol defines 3-arity sscan. Currently delegates to 2-arity version (args ignored).
+     (sscan this k c)))
 
   SortedSetCommands
   (zadd
@@ -406,7 +407,7 @@
      (d/->deferred (.zscan this k)))
     ([this k ^ScanCursor c]
      (d/->deferred (.zscan this k c)))
-    ([this k ^ScanCursor c ^ScanArgs args]
+    ([this _ ^ScanCursor c ^ScanArgs args]
      (d/->deferred (.zscan this c args))))
   (zlexcount [this k ^String min ^String max]
     (d/->deferred (.zlexcount this k min max)))
