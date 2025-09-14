@@ -48,7 +48,7 @@
    (->ConnectionPoolImpl
     (ConnectionPoolSupport/createGenericObjectPool
      (reify Supplier
-       (get [this]
+       (get [_]
          (condp instance? stateful-conn
            StatefulRedisConnection
            (.connect ^RedisClient redis-client ^RedisCodec codec)
