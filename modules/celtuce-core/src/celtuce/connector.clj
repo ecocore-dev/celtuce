@@ -32,6 +32,7 @@
   (shutdown         [this]))
 
 (def kw->tunit
+  "Map of keywords to Java TimeUnit enum values for time unit conversions."
   {:nanoseconds  TimeUnit/NANOSECONDS
    :microseconds TimeUnit/MICROSECONDS
    :milliseconds TimeUnit/MILLISECONDS
@@ -41,6 +42,7 @@
    :days         TimeUnit/DAYS})
 
 (def kw->cunit
+  "Map of keywords to Java ChronoUnit enum values for time duration conversions."
   {:nanoseconds  ChronoUnit/NANOS
    :nanos        ChronoUnit/NANOS
    :microseconds ChronoUnit/MICROS
@@ -62,11 +64,13 @@
    :forever      ChronoUnit/FOREVER})
 
 (def kw->dbehavior
+  "Map of keywords to ClientOptions DisconnectedBehavior enum values."
   {:default          ClientOptions$DisconnectedBehavior/DEFAULT
    :accept-commands  ClientOptions$DisconnectedBehavior/ACCEPT_COMMANDS
    :reject-commmands ClientOptions$DisconnectedBehavior/REJECT_COMMANDS})
 
 (def kw->rtrigger
+  "Map of keywords to ClusterTopologyRefreshOptions RefreshTrigger enum values."
   {:moved-redirect
    ClusterTopologyRefreshOptions$RefreshTrigger/MOVED_REDIRECT
    :ask-redirect
@@ -269,6 +273,7 @@
     (.shutdown redis-client)))
 
 (defn redis-server
+  "Creates a Redis server connection with optional configuration."
   [^String redis-uri &
    {codec :codec
     client-options :client-options
@@ -327,6 +332,7 @@
     (.shutdown redis-client)))
 
 (defn redis-cluster
+  "Creates a Redis cluster connection with optional configuration."
   [^String redis-uri &
    {codec :codec
     client-options :client-options
@@ -402,7 +408,9 @@
        (punsubscribed [_ p cnt]
          (cmds/punsubscribed listener p cnt))))))
 
-(defn as-pubsub [{:keys [redis-client ^RedisCodec codec]}]
+(defn as-pubsub
+  "Converts a Redis connection to a pub/sub connection."
+  [{:keys [redis-client ^RedisCodec codec]}]
   (->RedisPubSub
    redis-client
    (condp instance? redis-client

@@ -2,7 +2,10 @@
   (:import 
    (io.lettuce.core ScriptOutputType)))
 
-(defn output-type ^ScriptOutputType [t]
+(defn output-type
+  "Converts a keyword to the corresponding Lettuce ScriptOutputType enum value."
+  ^ScriptOutputType
+  [t]
   (case t
     :boolean ScriptOutputType/BOOLEAN
     :integer ScriptOutputType/INTEGER

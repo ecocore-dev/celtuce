@@ -12,23 +12,33 @@
    (com.esotericsoftware.kryo.io Output Input)
    (com.esotericsoftware.kryo.pool KryoFactory KryoPool KryoPool$Builder)))
 
-(defn ^"[B" bb->bytes [^ByteBuffer bb]
+(defn ^"[B" bb->bytes 
+  "Converts a ByteBuffer to a byte array."
+  [^ByteBuffer bb]
   (let [bytes (byte-array (.remaining bb))]
     (.get bb bytes)
     bytes))
 
-(defn bytes->bb ^ByteBuffer [^bytes b]
+(defn bytes->bb 
+  "Converts a byte array to a ByteBuffer."
+  ^ByteBuffer [^bytes b]
   (ByteBuffer/wrap b))
 
 ;; Lettuce codecs
 
-(defn utf8-string-codec []
+(defn utf8-string-codec 
+  "Creates a UTF-8 string codec for Redis commands."
+  []
   (Utf8StringCodec.))
 
-(defn byte-array-codec []
+(defn byte-array-codec 
+  "Creates a byte array codec for Redis commands."
+  []
   (ByteArrayCodec/INSTANCE))
 
-(defn compression-codec [^RedisCodec delegate-codec compression-type]
+(defn compression-codec 
+  "Creates a compression codec that wraps a delegate codec with gzip or deflate compression."
+  [^RedisCodec delegate-codec compression-type]
   {:pre [(#{:gzip :deflate} compression-type)]}
   (let [type (case compression-type
                :gzip    CompressionCodec$CompressionType/GZIP
@@ -71,6 +81,7 @@
        res#)))
 
 (defn carbonite-codec 
+  "Creates a Redis codec using Carbonite for Kryo-based serialization."
   ([]
    (carbonite-codec (fn [] (default-registry))))
   ([kryo-factory]
@@ -88,6 +99,7 @@
 ;; Nippy based codec
 
 (defn nippy-codec
+  "Creates a Redis codec using Nippy for serialization with optional freeze and thaw options."
   ([]
    (nippy-codec nil nil))
   ([freeze-opts thaw-opts]
