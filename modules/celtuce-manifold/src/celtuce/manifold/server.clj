@@ -1,7 +1,9 @@
 (ns celtuce.manifold.server
   (:refer-clojure :exclude [get set keys sort type eval time])
   (:require
-   [celtuce.commands :refer :all]
+   [celtuce.commands :refer [ConnectionCommands GeoCommands HLLCommands HashCommands
+                             KeyCommands ListCommands ScriptingCommands ServerCommands
+                             SetCommands SortedSetCommands StringsCommands TransactionalCommands sscan]]
    [celtuce.args.zset :refer [zadd-args]]
    [celtuce.args.scripting :refer [output-type]]
    [celtuce.args.geo :refer [->unit]]

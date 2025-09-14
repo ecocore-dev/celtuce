@@ -1,7 +1,7 @@
 (ns celtuce.impl.pubsub
   (:refer-clojure :exclude [get set keys sort type eval time])
   (:require
-   [celtuce.commands :refer :all])
+   [celtuce.commands :refer [PubSubCommands]])
   (:import
    (io.lettuce.core.pubsub.api.sync RedisPubSubCommands)))
 
