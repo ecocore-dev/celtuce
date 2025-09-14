@@ -22,6 +22,11 @@
    (io.lettuce.core.pubsub StatefulRedisPubSubConnection RedisPubSubListener)
    (io.lettuce.core.resource ClientResources)))
 
+;; FIXME: Incomplete RedisConnector implementations:
+;;        - RedisServer: missing `set-options`
+;;        - RedisCluster: missing `set-options`
+;;        - RedisPubSub: missing `set-options`, `commands-dynamic`
+;;       Leave as-is for now. Revisit to implement or redesign later.
 (defprotocol RedisConnector
   "Manipulate Redis client and stateful connection"
   (commands-sync    [this])
