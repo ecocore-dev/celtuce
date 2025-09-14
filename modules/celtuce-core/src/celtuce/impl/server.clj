@@ -385,7 +385,7 @@
      (.zscan this k))
     ([this k ^ScanCursor c]
      (.zscan this k c))
-    ([this k ^ScanCursor c ^ScanArgs args]
+    ([this _ ^ScanCursor c ^ScanArgs args]
      (.zscan this c args)))
   (zlexcount [this k ^String min ^String max]
     (.zlexcount this k min max))
