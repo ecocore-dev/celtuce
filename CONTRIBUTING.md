@@ -12,8 +12,6 @@ Thanks for contributing! Please follow these rules to keep the project maintaina
 - Force-push is allowed **only to feature branches**, never to `master`.  
 - **Require linear history**: PRs are merged with **Rebase & Merge**, preserving individual commits but avoiding merge commits.
 
----
-
 ## Commit Messages
 
 We follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).  
@@ -42,8 +40,6 @@ Use `!` or `BREAKING CHANGE:` footer for incompatible changes.
 
 > All **commits inside a PR** must follow Conventional Commits. Since we do not squash, the **full commit history is preserved**.
 
----
-
 ## Versioning & Releases
 
 We follow [Semantic Versioning](https://semver.org/):  
@@ -53,15 +49,11 @@ We follow [Semantic Versioning](https://semver.org/):
 
 Changelog and release notes are generated from commit history.  
 
----
-
 ## PR Guidelines
 
 - Keep PRs small and focused.  
 - Document motivation, changes, and breaking notes.  
 - Tests should be updated or added where possible.  
 - CI must be green before merging.  
-
----
 
 🙌 Thanks for helping improve the project!  
