@@ -105,11 +105,7 @@
 
 (defn zscan-seq
   "Lazy ZSCAN sequence, takes optional scan-args."
-  ([cmds key]
-   (->> (ScanIterator/zscan cmds key)
-        (iterator-seq)
-        (map (fn [^ScoredValue sv] [(.getScore sv) (.getValue sv)]))))
-  ([cmds key args]
-   (->> (ScanIterator/zscan cmds key)
-        (iterator-seq)
-        (map (fn [^ScoredValue sv] [(.getScore sv) (.getValue sv)])))))
+  [cmds key]
+  (->> (ScanIterator/zscan cmds key)
+       (iterator-seq)
+       (map (fn [^ScoredValue sv] [(.getScore sv) (.getValue sv)]))))
