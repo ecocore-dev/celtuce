@@ -7,7 +7,9 @@
 (def redis-url "redis://localhost:6379")
 (def ^:dynamic *cmds*)
 
-(defmacro with-str-cmds [& body]
+(defmacro with-str-cmds
+  "Creates temporary Redis server connection with UTF-8 string codec for string-specific tests."
+  [& body]
   `(let [rserv# (conn/redis-server redis-url
                                    :codec (celtuce.codec/utf8-string-codec))]
      (binding [*cmds* (conn/commands-sync rserv#)]
@@ -15,8 +17,7 @@
             (finally (conn/shutdown rserv#))))))
 
 (defmacro with-pubsub-cmds
-  "Binds local @pub and @sub with different connections,
-  registers the given listener on @sub"
+  "Creates separate Redis server pub/sub connections and binds them as @pub and @sub vars with listener."
   [listener & body]
   `(let [rserv-pub# (conn/as-pubsub (conn/redis-server redis-url))
          rserv-sub# (conn/as-pubsub (conn/redis-server redis-url))]
@@ -28,13 +29,17 @@
             (finally (conn/shutdown rserv-pub#)
                      (conn/shutdown rserv-sub#))))))
 
-(defn cmds-fixture [test-function]
+(defn cmds-fixture
+  "Sets up Redis server connection with synchronous commands and ensures proper cleanup."
+  [test-function]
   (let [rserv (conn/redis-server redis-url)]
     (binding [*cmds* (conn/commands-sync rserv)]
       (try (test-function)
            (finally (conn/shutdown rserv))))))
 
-(defn flush-fixture [test-function]
+(defn flush-fixture
+  "Flushes all Redis data before each test to ensure clean state."
+  [test-function]
   (redis/flushall *cmds*)
   (test-function))
 

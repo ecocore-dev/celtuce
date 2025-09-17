@@ -44,13 +44,17 @@
   (flushall [this]
     (.flushall this)))
 
-(defn cmds-fixture [test-function]
+(defn cmds-fixture
+  "Sets up Redis cluster connection with dynamic command interface and ensures proper cleanup."
+  [test-function]
   (let [rclust (conn/redis-cluster redis-url)]
     (binding [*cmds* (conn/commands-dynamic rclust io.celtuce.MyCommands)]
       (try (test-function)
            (finally (conn/shutdown rclust))))))
 
-(defn flush-fixture [test-function]
+(defn flush-fixture
+  "Flushes all Redis data before each test to ensure clean state."
+  [test-function]
   (flushall *cmds*)
   (test-function))
 
