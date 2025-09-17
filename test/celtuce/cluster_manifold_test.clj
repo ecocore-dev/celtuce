@@ -402,15 +402,15 @@
         (reify redis/PubSubListener
           (message [_ channel message]
             (deliver res [channel message]))
-          (message [_ pattern channel message])
-          (subscribed [_ channel count]
+          (message [_ _pattern _channel _message])
+          (subscribed [_ _channel _count]
             (swap! nb-sub inc)
             (deliver subscribed? true))
-          (unsubscribed [_ channel count]
+          (unsubscribed [_ _channel _count]
             (swap! nb-sub dec)
             (deliver unsubscribed? true))
-          (psubscribed [_ pattern count])
-          (punsubscribed [_ pattern count]))
+          (psubscribed [_ _pattern _count])
+          (punsubscribed [_ _pattern _count]))
         (redis/subscribe @sub "c")
         (is (= true @subscribed?))
         (is (= 1 @nb-sub))
