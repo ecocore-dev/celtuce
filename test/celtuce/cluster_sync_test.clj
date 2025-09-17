@@ -1,6 +1,6 @@
 (ns celtuce.cluster-sync-test
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [celtuce.commands :as redis]
    [celtuce.connector :as conn]))
 

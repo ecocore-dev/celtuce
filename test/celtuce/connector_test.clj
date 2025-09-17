@@ -1,6 +1,6 @@
 (ns celtuce.connector-test
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest testing]]
    [celtuce.connector :as conn]))
 
 (def redis-server-url  "redis://localhost:6379")

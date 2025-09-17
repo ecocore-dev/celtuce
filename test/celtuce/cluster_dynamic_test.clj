@@ -1,6 +1,6 @@
 (ns celtuce.cluster-dynamic-test
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [celtuce.connector :as conn]))
 
 (def redis-url "redis://localhost:30001")
