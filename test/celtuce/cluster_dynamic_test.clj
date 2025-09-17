@@ -3,8 +3,8 @@
    [clojure.test :refer [deftest is testing use-fixtures]]
    [celtuce.connector :as conn]))
 
-(def redis-url "redis://localhost:30001")
-(def ^:dynamic *cmds*)
+(def ^:private redis-url "redis://localhost:30001")
+(def ^:private ^:dynamic *cmds* nil)
 
 (gen-interface
   :name io.celtuce.MyCommands

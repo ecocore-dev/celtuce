@@ -4,8 +4,8 @@
    [celtuce.commands :as redis]
    [celtuce.connector :as conn]))
 
-(def redis-url "redis://localhost:6379")
-(def ^:dynamic *cmds*)
+(def ^:private redis-url "redis://localhost:6379")
+(def ^:private ^:dynamic *cmds* nil)
 
 (defmacro with-str-cmds
   "Creates temporary Redis server connection with UTF-8 string codec for string-specific tests."

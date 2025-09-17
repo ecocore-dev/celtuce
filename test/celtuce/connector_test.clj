@@ -3,8 +3,8 @@
    [clojure.test :refer [deftest testing]]
    [celtuce.connector :as conn]))
 
-(def redis-server-url  "redis://localhost:6379")
-(def redis-cluster-url "redis://localhost:30001")
+(def ^:private redis-server-url  "redis://localhost:6379")
+(def ^:private redis-cluster-url "redis://localhost:30001")
 
 (deftest redis-connector-options-test
 
