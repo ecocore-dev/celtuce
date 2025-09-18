@@ -7,7 +7,7 @@
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[org.clojure/clojure ~clj-version]
                  [io.lettuce/lettuce-core "6.8.1.RELEASE"]
-                 [potemkin "0.4.5"]
+                 [potemkin "0.4.6"]
                  [com.taoensso/nippy "3.5.0"]
                  [com.twitter/carbonite "1.5.0"]]
   :global-vars {*warn-on-reflection* true})
