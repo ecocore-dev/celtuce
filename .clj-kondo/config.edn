@@ -3,7 +3,5 @@
                         celtuce.cluster-sync-test/with-pubsub-cmds     hooks/with-pubsub-cmds
                         celtuce.server-manifold-test/with-pubsub-cmds  hooks/with-pubsub-cmds
                         celtuce.server-sync-test/with-pubsub-cmds      hooks/with-pubsub-cmds}}
- :lint-as {potemkin.namespaces/import-vars clojure.core/declare
-           manifold.deferred/let-flow clojure.core/let
-           manifold.stream/consume clojure.core/doseq}
+ :lint-as {potemkin.namespaces/import-vars clojure.core/declare}
  :linters {:missing-docstring {:level :warning}}}
