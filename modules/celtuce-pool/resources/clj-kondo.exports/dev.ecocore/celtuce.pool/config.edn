@@ -1,0 +1,4 @@
+{:hooks
+ {:analyze-call
+  {celtuce.pool/with-conn-pool hooks.celtuce-pool/with-conn-pool
+   celtuce.pool/with-conn-pool* hooks.celtuce-pool/with-conn-pool*}}}
