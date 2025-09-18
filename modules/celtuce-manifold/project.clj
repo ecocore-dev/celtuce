@@ -1,5 +1,6 @@
 (load-file "../../.deps-versions.clj")
 (defproject dev.ecocore/celtuce-manifold celtuce-version
+  :description "Manifold async integration for Celtuce Redis client"
   :url "https://github.com/ecocore-dev/celtuce"
   :scm {:dir ".."}
   :license {:name "Apache License 2.0"

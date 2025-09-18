@@ -1,5 +1,6 @@
 (load-file "../../.deps-versions.clj")
 (defproject dev.ecocore/celtuce-pool celtuce-version
+  :description "Connection pooling for Celtuce Redis client"
   :url "https://github.com/ecocore-dev/celtuce"
   :scm {:dir ".."}
   :license {:name "Apache License 2.0"
