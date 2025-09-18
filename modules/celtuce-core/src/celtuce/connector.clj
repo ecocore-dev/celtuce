@@ -22,6 +22,11 @@
    (io.lettuce.core.pubsub StatefulRedisPubSubConnection RedisPubSubListener)
    (io.lettuce.core.resource ClientResources)))
 
+;; FIXME: Incomplete RedisConnector implementations:
+;;        - RedisServer: missing `set-options`
+;;        - RedisCluster: missing `set-options`
+;;        - RedisPubSub: missing `set-options`, `commands-dynamic`
+;;       Leave as-is for now. Revisit to implement or redesign later.
 (defprotocol RedisConnector
   "Manipulate Redis client and stateful connection"
   (commands-sync    [this])
@@ -32,6 +37,7 @@
   (shutdown         [this]))
 
 (def kw->tunit
+  "Map of keywords to Java TimeUnit enum values for time unit conversions."
   {:nanoseconds  TimeUnit/NANOSECONDS
    :microseconds TimeUnit/MICROSECONDS
    :milliseconds TimeUnit/MILLISECONDS
@@ -41,6 +47,7 @@
    :days         TimeUnit/DAYS})
 
 (def kw->cunit
+  "Map of keywords to Java ChronoUnit enum values for time duration conversions."
   {:nanoseconds  ChronoUnit/NANOS
    :nanos        ChronoUnit/NANOS
    :microseconds ChronoUnit/MICROS
@@ -62,11 +69,13 @@
    :forever      ChronoUnit/FOREVER})
 
 (def kw->dbehavior
+  "Map of keywords to ClientOptions DisconnectedBehavior enum values."
   {:default          ClientOptions$DisconnectedBehavior/DEFAULT
    :accept-commands  ClientOptions$DisconnectedBehavior/ACCEPT_COMMANDS
    :reject-commmands ClientOptions$DisconnectedBehavior/REJECT_COMMANDS})
 
 (def kw->rtrigger
+  "Map of keywords to ClusterTopologyRefreshOptions RefreshTrigger enum values."
   {:moved-redirect
    ClusterTopologyRefreshOptions$RefreshTrigger/MOVED_REDIRECT
    :ask-redirect
@@ -74,8 +83,9 @@
    :persistent-reconnects
    ClusterTopologyRefreshOptions$RefreshTrigger/PERSISTENT_RECONNECTS})
 
-(defn- ^SocketOptions socket-options
+(defn- socket-options
   "Internal helper to build SocketOptions, used by b-client-options"
+  ^SocketOptions
   [opts]
   (cond-> (SocketOptions/builder)
     (and (contains? opts :timeout)
@@ -87,8 +97,9 @@
     (.tcpNoDelay (:tcp-no-delay opts))
     true (.build)))
 
-(defn- ^SslOptions ssl-options
+(defn- ssl-options
   "Internal helper to build SslOptions, used by b-client-options"
+  ^SslOptions
   [opts]
   (cond-> (SslOptions/builder)
     ;; provider setup
@@ -129,8 +140,9 @@
     ;; finally, build
     true (.build)))
 
-(defn- ^TimeoutOptions timeout-options
+(defn- timeout-options
   "Internal helper to build TimeoutOptions, used by b-client-options"
+  ^TimeoutOptions
   [opts]
   (cond-> (TimeoutOptions/builder)
     (and (contains? (:fixed-timeout opts) :timeout)
@@ -141,11 +153,11 @@
     (.timeoutCommands (:timeout-commands opts))
     true (.build)))
 
-(defn- ^ClientOptions$Builder b-client-options
+(defn- b-client-options
   "Sets up a ClientOptions builder from a map of options"
-  ([opts]
+  (^ClientOptions$Builder [opts]
    (b-client-options (ClientOptions/builder) opts))
-  ([^ClientOptions$Builder builder opts]
+  (^ClientOptions$Builder [^ClientOptions$Builder builder opts]
    (cond-> builder
      (contains? opts :ping-before-activate-connection)
      (.pingBeforeActivateConnection (:ping-before-activate-connection opts))
@@ -166,9 +178,10 @@
      (contains? opts :ssl-options)
      (.sslOptions (ssl-options (:ssl-options opts))))))
 
-(defn- ^ClusterTopologyRefreshOptions cluster-topo-refresh-options
+(defn- cluster-topo-refresh-options
   "Internal helper to build ClusterTopologyRefreshOptions,
   used by b-cluster-client-options"
+  ^ClusterTopologyRefreshOptions
   [opts]
   (cond-> (ClusterTopologyRefreshOptions/builder)
     (and (contains? opts :enable-periodic-refresh)
@@ -198,8 +211,9 @@
     (.refreshTriggersReconnectAttempts (:refresh-triggers-reconnect-attempts opts))
     true (.build)))
 
-(defn- ^ClusterClientOptions$Builder b-cluster-client-options
+(defn- b-cluster-client-options
   "Sets up a ClusterClientOptions builder from a map of options"
+  ^ClusterClientOptions$Builder
   [opts]
   (cond-> (ClusterClientOptions/builder)
     (contains? opts :validate-cluster-node-membership)
@@ -264,6 +278,7 @@
     (.shutdown redis-client)))
 
 (defn redis-server
+  "Creates a Redis server connection with optional configuration."
   [^String redis-uri &
    {codec :codec
     client-options :client-options
@@ -322,6 +337,7 @@
     (.shutdown redis-client)))
 
 (defn redis-cluster
+  "Creates a Redis cluster connection with optional configuration."
   [^String redis-uri &
    {codec :codec
     client-options :client-options
@@ -397,7 +413,9 @@
        (punsubscribed [_ p cnt]
          (cmds/punsubscribed listener p cnt))))))
 
-(defn as-pubsub [{:keys [redis-client ^RedisCodec codec]}]
+(defn as-pubsub
+  "Converts a Redis connection to a pub/sub connection."
+  [{:keys [redis-client ^RedisCodec codec]}]
   (->RedisPubSub
    redis-client
    (condp instance? redis-client

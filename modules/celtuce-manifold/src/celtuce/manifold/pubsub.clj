@@ -1,6 +1,6 @@
 (ns celtuce.manifold.pubsub
   (:require 
-   [celtuce.commands :refer :all]
+   [celtuce.commands :refer [PubSubCommands]]
    [manifold.deferred :as d])
   (:import 
    (io.lettuce.core.pubsub.api.async RedisPubSubAsyncCommands)))

@@ -5,7 +5,9 @@
     KeyScanCursor ValueScanCursor MapScanCursor ScoredValueScanCursor
     KeyValue ScoredValue)))
 
-(defn ^ScanArgs scan-args [& {limit :limit match :match}]
+(defn scan-args
+  "Creates ScanArgs with optional limit and match pattern for scan operations."
+  ^ScanArgs [& {limit :limit match :match}]
   (cond-> (ScanArgs.)
     limit (.limit (long limit))
     match (.match ^String match)))
@@ -38,14 +40,17 @@
          (map (fn [^ScoredValue sv] [(.getScore sv) (.getValue sv)]))
          (into []))))
 
-(defn ^ScanCursor scan-cursor 
-  ([]
+(defn scan-cursor
+  "Creates a ScanCursor from string cursor id or returns the initial cursor."
+  (^ScanCursor []
    ScanCursor/INITIAL)
-  ([cursor]
+  (^ScanCursor [cursor]
    (doto (ScanCursor.)
      (.setCursor cursor))))
 
-(defn chunked-scan-seq* [scan-fn cursor args]
+(defn chunked-scan-seq*
+  "Internal helper that builds a lazy sequence from scan function iterations."
+  [scan-fn cursor args]
   (let [cursor (if (instance? clojure.lang.IDeref cursor) @cursor cursor)]
     (when-not (finished? cursor)
       (let [cursor-res (if args (scan-fn cursor args) (scan-fn cursor))]
@@ -74,14 +79,14 @@
                                                        :args ['~a1 '~a2 '~a3]})))))
 
 (defn scan-seq
-  "Lazy SCAN sequence, takes optional scan-args"
+  "Lazy SCAN sequence over all Redis keys, takes optional scan-args."
   ([cmds]
    (iterator-seq (ScanIterator/scan cmds)))
   ([cmds args]
    (iterator-seq (ScanIterator/scan cmds ^ScanArgs args))))
 
 (defn hscan-seq
-  "Lazy HSCAN sequence, takes optional scan-args"
+  "Lazy HSCAN sequence over hash key fields, returns key-value pairs."
   ([cmds key]
    (->> (ScanIterator/hscan cmds key)
         (iterator-seq)
@@ -92,20 +97,15 @@
         (map (fn [^KeyValue kv] [(.getKey kv) (.getValue kv)])))))
 
 (defn sscan-seq
-  "Lazy SSCAN sequence, takes optional scan-args"
+  "Lazy SSCAN sequence over set key members."
   ([cmds key]
    (iterator-seq (ScanIterator/sscan cmds key)))
   ([cmds key args]
    (iterator-seq (ScanIterator/sscan cmds key ^ScanArgs args))))
 
 (defn zscan-seq
-  "Lazy ZSCAN sequence, takes optional scan-args"
-  ([cmds key]
-   (->> (ScanIterator/zscan cmds key)
-        (iterator-seq)
-        (map (fn [^ScoredValue sv] [(.getScore sv) (.getValue sv)]))))
-  ([cmds key args]
-   (->> (ScanIterator/zscan cmds key)
-        (iterator-seq)
-        (map (fn [^ScoredValue sv] [(.getScore sv) (.getValue sv)])))))
-
+  "Lazy ZSCAN sequence, takes optional scan-args."
+  [cmds key]
+  (->> (ScanIterator/zscan cmds key)
+       (iterator-seq)
+       (map (fn [^ScoredValue sv] [(.getScore sv) (.getValue sv)]))))

@@ -1,5 +1,9 @@
-{:lint-as {potemkin.namespaces/import-vars clojure.core/declare
+{:config-paths ["../modules/celtuce-pool/resources/clj-kondo.exports/dev.ecocore/celtuce.pool"]
+ :hooks {:analyze-call {celtuce.cluster-manifold-test/with-pubsub-cmds hooks/with-pubsub-cmds
+                        celtuce.cluster-sync-test/with-pubsub-cmds     hooks/with-pubsub-cmds
+                        celtuce.server-manifold-test/with-pubsub-cmds  hooks/with-pubsub-cmds
+                        celtuce.server-sync-test/with-pubsub-cmds      hooks/with-pubsub-cmds}}
+ :lint-as {potemkin.namespaces/import-vars clojure.core/declare
            manifold.deferred/let-flow clojure.core/let
-           manifold.deferred/chain clojure.core/->
            manifold.stream/consume clojure.core/doseq}
  :linters {:missing-docstring {:level :warning}}}

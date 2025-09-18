@@ -1,16 +1,18 @@
 (ns celtuce.pool-test
   (:require 
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [celtuce.commands :as redis]
    [celtuce.connector :as conn]
    [celtuce.pool :as pool]
    [celtuce.manifold :refer [commands-manifold]]
    [manifold.deferred :as d]))
 
-(def redis-url "redis://localhost:6379")
-(def redis-conn (conn/redis-server redis-url))
+(def ^:private redis-url "redis://localhost:6379")
+(def ^:private redis-conn (conn/redis-server redis-url))
 
-(defn cleanup-fixture [test-function]
+(defn cleanup-fixture
+  "Flushes Redis data before tests and shuts down connection after completion."
+  [test-function]
   (redis/flushall (conn/commands-sync redis-conn))
   (test-function)
   (conn/shutdown redis-conn))

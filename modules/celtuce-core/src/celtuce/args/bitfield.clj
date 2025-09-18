@@ -5,8 +5,9 @@
     BitFieldArgs$BitFieldType
     BitFieldArgs$OverflowType)))
 
-(defn ^BitFieldArgs$BitFieldType bft 
+(defn bft
   "Constructs a BitFieldType from a keyword"
+  ^BitFieldArgs$BitFieldType
   [bft-kw]
   (if-let [[_ sign bits] (re-find #"(^[us])(\d+)$" ((fnil name "") bft-kw))]
     (case sign

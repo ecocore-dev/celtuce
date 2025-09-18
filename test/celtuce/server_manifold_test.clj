@@ -1,15 +1,18 @@
 (ns celtuce.server-manifold-test
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [celtuce.commands :as redis]
    [celtuce.connector :as conn]
    [celtuce.manifold :refer [commands-manifold]]
+   [celtuce.scan :as scan]
    [manifold.deferred :as d]))
 
-(def redis-url "redis://localhost:6379")
-(def ^:dynamic *cmds*)
+(def ^:private redis-url "redis://localhost:6379")
+(def ^:private ^:dynamic *cmds* nil)
 
-(defmacro with-str-cmds [& body]
+(defmacro with-str-cmds
+  "Creates temporary Redis server connection with UTF-8 string codec for string-specific tests."
+  [& body]
   `(let [rserv# (conn/redis-server redis-url
                                    :codec (celtuce.codec/utf8-string-codec))]
      (binding [*cmds* (commands-manifold rserv#)]
@@ -17,8 +20,7 @@
             (finally (conn/shutdown rserv#))))))
 
 (defmacro with-pubsub-cmds
-  "Binds local @pub and @sub with different connections,
-  registers the given listener on @sub"
+  "Creates separate Redis server pub/sub connections and binds them as @pub and @sub vars with listener."
   [listener & body]
   `(let [rserv-pub# (conn/as-pubsub (conn/redis-server redis-url))
          rserv-sub# (conn/as-pubsub (conn/redis-server redis-url))]
@@ -30,13 +32,17 @@
             (finally (conn/shutdown rserv-pub#)
                      (conn/shutdown rserv-sub#))))))
 
-(defn cmds-fixture [test-function]
+(defn cmds-fixture
+  "Sets up Redis server connection with manifold async commands and ensures proper cleanup."
+  [test-function]
   (let [rserv (conn/redis-server redis-url)]
     (binding [*cmds* (commands-manifold rserv)]
       (try (test-function)
            (finally (conn/shutdown rserv))))))
 
-(defn flush-fixture [test-function]
+(defn flush-fixture
+  "Flushes all Redis data before each test to ensure clean state."
+  [test-function]
   (redis/flushall *cmds*)
   (test-function))
 
@@ -86,7 +92,7 @@
     (let [cur @(redis/hscan
                 *cmds* "hl" (redis/scan-cursor) (redis/scan-args :limit 10))
           res (redis/scan-res cur)]
-      (is (= false (celtuce.scan/finished? cur)))
+      (is (= false (scan/finished? cur)))
       (is (= true (map? res)))
       (is (<= 5 (count res) 15))) ;; about 10
     (let [els1 (->> (redis/scan-args :limit 50)
@@ -101,7 +107,7 @@
     (let [cur @(redis/hscan
                 *cmds* "hs" (redis/scan-cursor) (redis/scan-args :match "*0"))
           res (redis/scan-res cur)]
-      (is (= true (celtuce.scan/finished? cur)))
+      (is (= true (scan/finished? cur)))
       (is (= (->> (range 0 50 10) (map (fn [x] [(str x) (str (+ x 50))])) (into {}))
              res)))
     (is (thrown? Exception
@@ -406,15 +412,15 @@
         (reify redis/PubSubListener
           (message [_ channel message]
             (deliver res [channel message]))
-          (message [_ pattern channel message])
-          (subscribed [_ channel count]
+          (message [_ _pattern _channel _message])
+          (subscribed [_ _channel _count]
             (swap! nb-sub inc)
             (deliver subscribed? true))
-          (unsubscribed [_ channel count]
+          (unsubscribed [_ _channel _count]
             (swap! nb-sub dec)
             (deliver unsubscribed? true))
-          (psubscribed [_ pattern count])
-          (punsubscribed [_ pattern count]))
+          (psubscribed [_ _pattern _count])
+          (punsubscribed [_ _pattern _count]))
         (redis/subscribe @sub "c")
         (is (= true @subscribed?))
         (is (= 1 @nb-sub))

@@ -1,10 +1,10 @@
 (ns celtuce.cluster-dynamic-test
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [celtuce.connector :as conn]))
 
-(def redis-url "redis://localhost:30001")
-(def ^:dynamic *cmds*)
+(def ^:private redis-url "redis://localhost:30001")
+(def ^:private ^:dynamic *cmds* nil)
 
 (gen-interface
   :name io.celtuce.MyCommands
@@ -44,13 +44,17 @@
   (flushall [this]
     (.flushall this)))
 
-(defn cmds-fixture [test-function]
+(defn cmds-fixture
+  "Sets up Redis cluster connection with dynamic command interface and ensures proper cleanup."
+  [test-function]
   (let [rclust (conn/redis-cluster redis-url)]
     (binding [*cmds* (conn/commands-dynamic rclust io.celtuce.MyCommands)]
       (try (test-function)
            (finally (conn/shutdown rclust))))))
 
-(defn flush-fixture [test-function]
+(defn flush-fixture
+  "Flushes all Redis data before each test to ensure clean state."
+  [test-function]
   (flushall *cmds*)
   (test-function))
 

@@ -1,7 +1,9 @@
 (ns celtuce.impl.server
   (:refer-clojure :exclude [get set keys sort type eval time])
   (:require
-   [celtuce.commands :refer :all]
+   [celtuce.commands :refer [ConnectionCommands GeoCommands HLLCommands HashCommands KeyCommands
+                             ListCommands ScriptingCommands ServerCommands SetCommands
+                             SortedSetCommands StringsCommands TransactionalCommands]]
    [celtuce.args.zset :refer [zadd-args]]
    [celtuce.args.scripting :refer [output-type]]
    [celtuce.args.geo :refer [->unit]])
@@ -383,7 +385,7 @@
      (.zscan this k))
     ([this k ^ScanCursor c]
      (.zscan this k c))
-    ([this k ^ScanCursor c ^ScanArgs args]
+    ([this _ ^ScanCursor c ^ScanArgs args]
      (.zscan this c args)))
   (zlexcount [this k ^String min ^String max]
     (.zlexcount this k min max))
