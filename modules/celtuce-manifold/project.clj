@@ -6,5 +6,5 @@
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[org.clojure/clojure ~clj-version]
                  [dev.ecocore/celtuce-core ~celtuce-version]
-                 [manifold "0.1.8"]]
+                 [manifold "0.4.3"]]
   :global-vars {*warn-on-reflection* true})
