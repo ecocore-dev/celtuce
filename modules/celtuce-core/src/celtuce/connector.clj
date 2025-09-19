@@ -198,7 +198,8 @@
     (cond->
         (= :all (:enable-adaptive-refresh-trigger opts))
       (.enableAllAdaptiveRefreshTriggers)
-      (set? (:enable-adaptive-refresh-trigger opts))
+      (and (set? (:enable-adaptive-refresh-trigger opts))
+           (seq (:enable-adaptive-refresh-trigger opts)))
       (.enableAdaptiveRefreshTrigger
        (into-array ClusterTopologyRefreshOptions$RefreshTrigger
                    (->> opts :enable-adaptive-refresh-trigger (map kw->rtrigger)))))
