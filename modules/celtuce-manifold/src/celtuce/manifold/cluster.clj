@@ -522,7 +522,7 @@
     (d/->deferred (.lastsave this)))
   (save [this]
     (d/->deferred (.save this)))
-  (shutdown [this save?]
+  (shutdown [this ^Boolean save?]
     (d/->deferred (.shutdown this save?)))
   (slaveof [this ^String host ^Integer port]
     (d/->deferred (.slaveof this host port)))

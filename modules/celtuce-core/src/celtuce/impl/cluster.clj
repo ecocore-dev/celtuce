@@ -490,7 +490,7 @@
     (.lastsave this))
   (save [this]
     (.save this))
-  (shutdown [this save?]
+  (shutdown [this ^Boolean save?]
     (.shutdown this save?))
   (slaveof [this ^String host ^Integer port]
     (.slaveof this host port))
