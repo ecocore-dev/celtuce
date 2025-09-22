@@ -213,6 +213,7 @@
     (.refreshTriggersReconnectAttempts (:refresh-triggers-reconnect-attempts opts))
     true (.build)))
 
+
 (defn- cluster-node-filter
   "Transforms a Clojure predicate function that operates on node maps
    into a Java function compatible with `ClusterClientOptions.nodeFilter`.
@@ -224,21 +225,36 @@
         (node-filter-fn)
         (boolean))))
 
+
 (defn- b-cluster-client-options
-  "Sets up a ClusterClientOptions builder from a map of options"
+  "Sets up a ClusterClientOptions builder from a map of options.
+   Supported keys:
+   - :validate-cluster-node-membership (boolean)
+   - :max-redirects (int)
+   - :topology-refresh-options (map)
+   - :node-filter (fn of node->map -> boolean)"
   ^ClusterClientOptions$Builder
-  [opts]
+  [{:keys [validate-cluster-node-membership
+           max-redirects
+           topology-refresh-options
+           node-filter] :as opts}]
   (cond-> (ClusterClientOptions/builder)
-    (contains? opts :validate-cluster-node-membership)
-    (.validateClusterNodeMembership (:validate-cluster-node-membership opts))
-    (contains? opts :max-redirects)
-    (.maxRedirects (:max-redirects opts))
-    (contains? opts :topology-refresh-options)
+    (some? validate-cluster-node-membership)
+    (.validateClusterNodeMembership (boolean validate-cluster-node-membership))
+
+    (some? max-redirects)
+    (.maxRedirects (int max-redirects))
+
+    (some? topology-refresh-options)
     (.topologyRefreshOptions
-     (cluster-topo-refresh-options (:topology-refresh-options opts)))
-    (some? (:node-filter opts))
-    (.nodeFilter (cluster-node-filter (:node-filter opts)))
-    true (b-client-options opts)))
+      (cluster-topo-refresh-options topology-refresh-options))
+
+    (some? node-filter)
+    (.nodeFilter
+      (cluster-node-filter node-filter))
+
+    :always (b-client-options opts)))
+
 
 (defn create-client-resource
   "You can create an instance of client resources in a clojuresque way; check out the
