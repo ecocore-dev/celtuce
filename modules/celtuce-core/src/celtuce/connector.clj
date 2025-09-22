@@ -1,28 +1,28 @@
 (ns celtuce.connector
   (:require
-   [clojure.java.io :as io]
-   [celtuce.args.cluster-node :as node]
-   [celtuce.codec :refer [nippy-codec]]
-   [celtuce.commands :as cmds])
+    [celtuce.args.cluster-node :as node]
+    [celtuce.codec :refer [nippy-codec]]
+    [celtuce.commands :as cmds]
+    [clojure.java.io :as io])
   (:import
-    (java.util.concurrent TimeUnit)
-    (java.time Duration)
-    (java.time.temporal ChronoUnit)
     (io.lettuce.core
-      RedisClient
-      ClientOptions ClientOptions$Builder ClientOptions$DisconnectedBehavior
+      ClientOptions
+      ClientOptions$Builder ClientOptions$DisconnectedBehavior RedisClient
       SocketOptions SslOptions TimeoutOptions)
+    (io.lettuce.core.api StatefulRedisConnection)
+    (io.lettuce.core.cluster RedisClusterClient)
+    (io.lettuce.core.cluster.api StatefulRedisClusterConnection)
     (io.lettuce.core.cluster
       ClusterClientOptions ClusterClientOptions$Builder
       ClusterTopologyRefreshOptions ClusterTopologyRefreshOptions$RefreshTrigger)
-    (io.lettuce.core.codec RedisCodec)
-    (io.lettuce.core.api StatefulRedisConnection)
-    (io.lettuce.core.dynamic RedisCommandFactory)
-    (io.lettuce.core.cluster RedisClusterClient)
-    (io.lettuce.core.cluster.api StatefulRedisClusterConnection)
     (io.lettuce.core.cluster.models.partitions RedisClusterNode)
-    (io.lettuce.core.pubsub StatefulRedisPubSubConnection RedisPubSubListener)
-    (io.lettuce.core.resource ClientResources)))
+    (io.lettuce.core.codec RedisCodec)
+    (io.lettuce.core.dynamic RedisCommandFactory)
+    (io.lettuce.core.pubsub RedisPubSubListener StatefulRedisPubSubConnection)
+    (io.lettuce.core.resource ClientResources)
+    (java.time Duration)
+    (java.time.temporal ChronoUnit)
+    (java.util.concurrent TimeUnit)))
 
 ;; FIXME: Incomplete RedisConnector implementations:
 ;;        - RedisServer: missing `set-options`
