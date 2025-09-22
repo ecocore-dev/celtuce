@@ -1,26 +1,28 @@
 (ns celtuce.connector
   (:require
    [clojure.java.io :as io]
+   [celtuce.args.cluster-node :as node]
    [celtuce.codec :refer [nippy-codec]]
    [celtuce.commands :as cmds])
   (:import
-   (java.util.concurrent TimeUnit)
-   (java.time Duration)
-   (java.time.temporal ChronoUnit)
-   (io.lettuce.core
-    RedisClient
-    ClientOptions ClientOptions$Builder ClientOptions$DisconnectedBehavior
-    SocketOptions SslOptions TimeoutOptions)
-   (io.lettuce.core.cluster
-    ClusterClientOptions ClusterClientOptions$Builder
-    ClusterTopologyRefreshOptions ClusterTopologyRefreshOptions$RefreshTrigger)
-   (io.lettuce.core.codec RedisCodec)
-   (io.lettuce.core.api StatefulRedisConnection)
-   (io.lettuce.core.dynamic RedisCommandFactory)
-   (io.lettuce.core.cluster RedisClusterClient)
-   (io.lettuce.core.cluster.api StatefulRedisClusterConnection)
-   (io.lettuce.core.pubsub StatefulRedisPubSubConnection RedisPubSubListener)
-   (io.lettuce.core.resource ClientResources)))
+    (java.util.concurrent TimeUnit)
+    (java.time Duration)
+    (java.time.temporal ChronoUnit)
+    (io.lettuce.core
+      RedisClient
+      ClientOptions ClientOptions$Builder ClientOptions$DisconnectedBehavior
+      SocketOptions SslOptions TimeoutOptions)
+    (io.lettuce.core.cluster
+      ClusterClientOptions ClusterClientOptions$Builder
+      ClusterTopologyRefreshOptions ClusterTopologyRefreshOptions$RefreshTrigger)
+    (io.lettuce.core.codec RedisCodec)
+    (io.lettuce.core.api StatefulRedisConnection)
+    (io.lettuce.core.dynamic RedisCommandFactory)
+    (io.lettuce.core.cluster RedisClusterClient)
+    (io.lettuce.core.cluster.api StatefulRedisClusterConnection)
+    (io.lettuce.core.cluster.models.partitions RedisClusterNode)
+    (io.lettuce.core.pubsub StatefulRedisPubSubConnection RedisPubSubListener)
+    (io.lettuce.core.resource ClientResources)))
 
 ;; FIXME: Incomplete RedisConnector implementations:
 ;;        - RedisServer: missing `set-options`
@@ -211,6 +213,17 @@
     (.refreshTriggersReconnectAttempts (:refresh-triggers-reconnect-attempts opts))
     true (.build)))
 
+(defn- cluster-node-filter
+  "Transforms a Clojure predicate function that operates on node maps
+   into a Java function compatible with `ClusterClientOptions.nodeFilter`.
+   The predicate receives a map representation of cluster node properties."
+  [node-filter-fn]
+  (fn [^RedisClusterNode node]
+    (-> node
+        (node/node->map)
+        (node-filter-fn)
+        (boolean))))
+
 (defn- b-cluster-client-options
   "Sets up a ClusterClientOptions builder from a map of options"
   ^ClusterClientOptions$Builder
@@ -223,6 +236,8 @@
     (contains? opts :topology-refresh-options)
     (.topologyRefreshOptions
      (cluster-topo-refresh-options (:topology-refresh-options opts)))
+    (some? (:node-filter opts))
+    (.nodeFilter (cluster-node-filter (:node-filter opts)))
     true (b-client-options opts)))
 
 (defn create-client-resource
