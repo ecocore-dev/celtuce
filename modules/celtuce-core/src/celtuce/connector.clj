@@ -188,12 +188,19 @@
    - `:all` — enables all adaptive refresh triggers (kept for backward compatibility);
    - a collection (vector/list/set) of trigger keywords — enables exactly those triggers.
 
+   Accepts in `opts`:
+   - :enable-all-adaptive-refresh-triggers true  → enable all
+   - :enable-adaptive-refresh-triggers coll      → enable exactly those triggers
+   - :enable-adaptive-refresh-trigger :all|coll  → (back-compat) enable all or listed
+
    Returns the same builder for chaining."
   ^ClusterTopologyRefreshOptions$Builder
   [^ClusterTopologyRefreshOptions$Builder builder opts]
-  (let [refresh-triggers (:enable-adaptive-refresh-trigger opts)]
+  (let [refresh-triggers (or (:enable-adaptive-refresh-triggers opts)
+                             (:enable-adaptive-refresh-trigger opts))]
     (cond
-      (= :all refresh-triggers)
+      (or (:enable-all-adaptive-refresh-triggers opts)
+          (= :all refresh-triggers))
       (.enableAllAdaptiveRefreshTriggers builder)
 
       (coll? refresh-triggers)
@@ -204,8 +211,9 @@
              (map kw->rtrigger)
              (into-array ClusterTopologyRefreshOptions$RefreshTrigger)))
 
-      :else (throw (ex-info "Unsupported value for :enable-adaptive-refresh-trigger"
-                            {:opt :enable-adaptive-refresh-triggers :got refresh-triggers})))))
+      :else (throw
+              (ex-info "Unsupported value for `:enable-adaptive-refresh-trigger`"
+                       {:value refresh-triggers})))))
 
 
 (defn- cluster-topo-refresh-options
@@ -227,7 +235,10 @@
     (contains? opts :dynamic-refresh-sources)
     (.dynamicRefreshSources (:dynamic-refresh-sources opts))
 
-    (contains? opts :enable-adaptive-refresh-trigger)
+    (or
+      (contains? opts :enable-all-adaptive-refresh-triggers)
+      (contains? opts :enable-adaptive-refresh-triggers)
+      (contains? opts :enable-adaptive-refresh-trigger))
     (enable-adaptive-refresh-triggers opts)
 
     (contains? opts :adaptive-refresh-triggers-timeout)
