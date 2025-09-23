@@ -14,7 +14,7 @@
     (io.lettuce.core.cluster.api StatefulRedisClusterConnection)
     (io.lettuce.core.cluster
       ClusterClientOptions ClusterClientOptions$Builder
-      ClusterTopologyRefreshOptions ClusterTopologyRefreshOptions$RefreshTrigger)
+      ClusterTopologyRefreshOptions ClusterTopologyRefreshOptions$Builder ClusterTopologyRefreshOptions$RefreshTrigger)
     (io.lettuce.core.cluster.models.partitions RedisClusterNode)
     (io.lettuce.core.codec RedisCodec)
     (io.lettuce.core.dynamic RedisCommandFactory)
@@ -180,6 +180,34 @@
      (contains? opts :ssl-options)
      (.sslOptions (ssl-options (:ssl-options opts))))))
 
+
+(defn- enable-adaptive-refresh-triggers
+  "Enable adaptive refresh triggers on the given ClusterTopologyRefreshOptions builder.
+
+   Expects :enable-adaptive-refresh-trigger in `opts` to be either:
+   - `:all` — enables all adaptive refresh triggers (kept for backward compatibility);
+   - a collection (vector/list/set) of trigger keywords — enables exactly those triggers.
+
+   Returns the same builder for chaining."
+  ^ClusterTopologyRefreshOptions$Builder
+  [^ClusterTopologyRefreshOptions$Builder builder opts]
+  (let [refresh-triggers (:enable-adaptive-refresh-trigger opts)]
+    (cond
+      (= :all refresh-triggers)
+      (.enableAllAdaptiveRefreshTriggers builder)
+
+      (coll? refresh-triggers)
+      (.enableAdaptiveRefreshTrigger
+        builder
+        (->> refresh-triggers
+             (set)
+             (map kw->rtrigger)
+             (into-array ClusterTopologyRefreshOptions$RefreshTrigger)))
+
+      :else (throw (ex-info "Unsupported value for :enable-adaptive-refresh-trigger"
+                            {:opt :enable-adaptive-refresh-triggers :got refresh-triggers})))))
+
+
 (defn- cluster-topo-refresh-options
   "Internal helper to build ClusterTopologyRefreshOptions,
   used by b-cluster-client-options"
@@ -197,13 +225,7 @@
     (contains? opts :dynamic-refresh-sources)
     (.dynamicRefreshSources (:dynamic-refresh-sources opts))
     (contains? opts :enable-adaptive-refresh-trigger)
-    (cond->
-        (= :all (:enable-adaptive-refresh-trigger opts))
-      (.enableAllAdaptiveRefreshTriggers)
-      (seq (:enable-adaptive-refresh-trigger opts))
-      (.enableAdaptiveRefreshTrigger
-       (into-array ClusterTopologyRefreshOptions$RefreshTrigger
-                   (->> opts :enable-adaptive-refresh-trigger set (map kw->rtrigger)))))
+    (enable-adaptive-refresh-triggers opts)
     (contains? opts :adaptive-refresh-triggers-timeout)
     (.adaptiveRefreshTriggersTimeout
      (Duration/of
