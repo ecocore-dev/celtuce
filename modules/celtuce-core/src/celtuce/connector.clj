@@ -1,26 +1,28 @@
 (ns celtuce.connector
   (:require
-   [clojure.java.io :as io]
-   [celtuce.codec :refer [nippy-codec]]
-   [celtuce.commands :as cmds])
+    [celtuce.args.cluster-node :as node]
+    [celtuce.codec :refer [nippy-codec]]
+    [celtuce.commands :as cmds]
+    [clojure.java.io :as io])
   (:import
-   (java.util.concurrent TimeUnit)
-   (java.time Duration)
-   (java.time.temporal ChronoUnit)
-   (io.lettuce.core
-    RedisClient
-    ClientOptions ClientOptions$Builder ClientOptions$DisconnectedBehavior
-    SocketOptions SslOptions TimeoutOptions)
-   (io.lettuce.core.cluster
-    ClusterClientOptions ClusterClientOptions$Builder
-    ClusterTopologyRefreshOptions ClusterTopologyRefreshOptions$RefreshTrigger)
-   (io.lettuce.core.codec RedisCodec)
-   (io.lettuce.core.api StatefulRedisConnection)
-   (io.lettuce.core.dynamic RedisCommandFactory)
-   (io.lettuce.core.cluster RedisClusterClient)
-   (io.lettuce.core.cluster.api StatefulRedisClusterConnection)
-   (io.lettuce.core.pubsub StatefulRedisPubSubConnection RedisPubSubListener)
-   (io.lettuce.core.resource ClientResources)))
+    (io.lettuce.core
+      ClientOptions
+      ClientOptions$Builder ClientOptions$DisconnectedBehavior RedisClient
+      SocketOptions SslOptions TimeoutOptions)
+    (io.lettuce.core.api StatefulRedisConnection)
+    (io.lettuce.core.cluster RedisClusterClient)
+    (io.lettuce.core.cluster.api StatefulRedisClusterConnection)
+    (io.lettuce.core.cluster
+      ClusterClientOptions ClusterClientOptions$Builder
+      ClusterTopologyRefreshOptions ClusterTopologyRefreshOptions$RefreshTrigger)
+    (io.lettuce.core.cluster.models.partitions RedisClusterNode)
+    (io.lettuce.core.codec RedisCodec)
+    (io.lettuce.core.dynamic RedisCommandFactory)
+    (io.lettuce.core.pubsub RedisPubSubListener StatefulRedisPubSubConnection)
+    (io.lettuce.core.resource ClientResources)
+    (java.time Duration)
+    (java.time.temporal ChronoUnit)
+    (java.util.concurrent TimeUnit)))
 
 ;; FIXME: Incomplete RedisConnector implementations:
 ;;        - RedisServer: missing `set-options`
@@ -211,19 +213,48 @@
     (.refreshTriggersReconnectAttempts (:refresh-triggers-reconnect-attempts opts))
     true (.build)))
 
+
+(defn- cluster-node-filter
+  "Transforms a Clojure predicate function that operates on node maps
+   into a Java function compatible with `ClusterClientOptions.nodeFilter`.
+   The predicate receives a map representation of cluster node properties."
+  [node-filter-fn]
+  (fn [^RedisClusterNode node]
+    (-> node
+        (node/node->map)
+        (node-filter-fn)
+        (boolean))))
+
+
 (defn- b-cluster-client-options
-  "Sets up a ClusterClientOptions builder from a map of options"
+  "Sets up a ClusterClientOptions builder from a map of options.
+   Supported keys:
+   - :validate-cluster-node-membership (boolean)
+   - :max-redirects (int)
+   - :topology-refresh-options (map)
+   - :node-filter (fn of node->map -> boolean)"
   ^ClusterClientOptions$Builder
-  [opts]
+  [{:keys [validate-cluster-node-membership
+           max-redirects
+           topology-refresh-options
+           node-filter] :as opts}]
   (cond-> (ClusterClientOptions/builder)
-    (contains? opts :validate-cluster-node-membership)
-    (.validateClusterNodeMembership (:validate-cluster-node-membership opts))
-    (contains? opts :max-redirects)
-    (.maxRedirects (:max-redirects opts))
-    (contains? opts :topology-refresh-options)
+    (some? validate-cluster-node-membership)
+    (.validateClusterNodeMembership (boolean validate-cluster-node-membership))
+
+    (some? max-redirects)
+    (.maxRedirects (int max-redirects))
+
+    (some? topology-refresh-options)
     (.topologyRefreshOptions
-     (cluster-topo-refresh-options (:topology-refresh-options opts)))
-    true (b-client-options opts)))
+      (cluster-topo-refresh-options topology-refresh-options))
+
+    (some? node-filter)
+    (.nodeFilter
+      (cluster-node-filter node-filter))
+
+    :always (b-client-options opts)))
+
 
 (defn create-client-resource
   "You can create an instance of client resources in a clojuresque way; check out the
