@@ -14,7 +14,7 @@
     (io.lettuce.core.cluster.api StatefulRedisClusterConnection)
     (io.lettuce.core.cluster
       ClusterClientOptions ClusterClientOptions$Builder
-      ClusterTopologyRefreshOptions ClusterTopologyRefreshOptions$RefreshTrigger)
+      ClusterTopologyRefreshOptions ClusterTopologyRefreshOptions$Builder ClusterTopologyRefreshOptions$RefreshTrigger)
     (io.lettuce.core.cluster.models.partitions RedisClusterNode)
     (io.lettuce.core.codec RedisCodec)
     (io.lettuce.core.dynamic RedisCommandFactory)
@@ -180,9 +180,45 @@
      (contains? opts :ssl-options)
      (.sslOptions (ssl-options (:ssl-options opts))))))
 
+
+(defn- enable-adaptive-refresh-triggers
+  "Enable adaptive refresh triggers on the given ClusterTopologyRefreshOptions builder.
+
+   Expects :enable-adaptive-refresh-trigger in `opts` to be either:
+   - `:all` — enables all adaptive refresh triggers (kept for backward compatibility);
+   - a collection (vector/list/set) of trigger keywords — enables exactly those triggers.
+
+   Accepts in `opts`:
+   - :enable-all-adaptive-refresh-triggers true  → enable all
+   - :enable-adaptive-refresh-triggers coll      → enable exactly those triggers
+   - :enable-adaptive-refresh-trigger :all|coll  → (back-compat) enable all or listed
+
+   Returns the same builder for chaining."
+  ^ClusterTopologyRefreshOptions$Builder
+  [^ClusterTopologyRefreshOptions$Builder builder opts]
+  (let [refresh-triggers (or (:enable-adaptive-refresh-triggers opts)
+                             (:enable-adaptive-refresh-trigger opts))]
+    (cond
+      (or (:enable-all-adaptive-refresh-triggers opts)
+          (= :all refresh-triggers))
+      (.enableAllAdaptiveRefreshTriggers builder)
+
+      (coll? refresh-triggers)
+      (.enableAdaptiveRefreshTrigger
+        builder
+        (->> refresh-triggers
+             (set)
+             (map kw->rtrigger)
+             (into-array ClusterTopologyRefreshOptions$RefreshTrigger)))
+
+      :else (throw
+              (ex-info "Unsupported value for `:enable-adaptive-refresh-trigger`"
+                       {:value refresh-triggers})))))
+
+
 (defn- cluster-topo-refresh-options
   "Internal helper to build ClusterTopologyRefreshOptions,
-  used by b-cluster-client-options"
+   used by b-cluster-client-options."
   ^ClusterTopologyRefreshOptions
   [opts]
   (cond-> (ClusterTopologyRefreshOptions/builder)
@@ -192,26 +228,29 @@
     (.enablePeriodicRefresh
      (Duration/of (-> opts :refresh-period :period)
                   (-> opts :refresh-period :unit kw->cunit)))
+
     (contains? opts :close-stale-connections)
     (.closeStaleConnections (:close-stale-connections opts))
+
     (contains? opts :dynamic-refresh-sources)
     (.dynamicRefreshSources (:dynamic-refresh-sources opts))
-    (contains? opts :enable-adaptive-refresh-trigger)
-    (cond->
-        (= :all (:enable-adaptive-refresh-trigger opts))
-      (.enableAllAdaptiveRefreshTriggers)
-      (seq (:enable-adaptive-refresh-trigger opts))
-      (.enableAdaptiveRefreshTrigger
-       (into-array ClusterTopologyRefreshOptions$RefreshTrigger
-                   (->> opts :enable-adaptive-refresh-trigger set (map kw->rtrigger)))))
+
+    (or
+      (contains? opts :enable-all-adaptive-refresh-triggers)
+      (contains? opts :enable-adaptive-refresh-triggers)
+      (contains? opts :enable-adaptive-refresh-trigger))
+    (enable-adaptive-refresh-triggers opts)
+
     (contains? opts :adaptive-refresh-triggers-timeout)
     (.adaptiveRefreshTriggersTimeout
      (Duration/of
       (-> opts :adaptive-refresh-triggers-timeout :timeout)
       (-> opts :adaptive-refresh-triggers-timeout :unit kw->cunit)))
+
     (contains? opts :refresh-triggers-reconnect-attempts)
     (.refreshTriggersReconnectAttempts (:refresh-triggers-reconnect-attempts opts))
-    true (.build)))
+
+    :always (.build)))
 
 
 (defn- cluster-node-filter

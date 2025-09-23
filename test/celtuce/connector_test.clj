@@ -1,7 +1,14 @@
 (ns celtuce.connector-test
   (:require
-   [clojure.test :refer [deftest testing]]
-   [celtuce.connector :as conn]))
+   [clojure.test :refer [deftest testing is]]
+   [celtuce.connector :as conn])
+  (:import
+    (clojure.lang ExceptionInfo)
+    (io.lettuce.core.cluster
+      ClusterTopologyRefreshOptions
+      ClusterTopologyRefreshOptions$Builder
+      ClusterTopologyRefreshOptions$RefreshTrigger)))
+
 
 (def ^:private redis-server-url  "redis://localhost:6379")
 (def ^:private redis-cluster-url "redis://localhost:30001")
@@ -56,6 +63,54 @@
        :refresh-period                        {:period 60 :unit :seconds}
        :close-stale-connections               true
        :dynamic-refresh-sources               true
-       :enable-adaptive-refresh-trigger       #{}
+       :enable-all-adaptive-refresh-triggers  true
        :adaptive-refresh-triggers-timeout     {:timeout 30 :unit :seconds}
        :refresh-triggers-reconnect-attempts   5}})))
+
+
+(deftest ^:unit test-enable-adaptive-refresh-triggers
+  (let [all-refresh-triggers (set (ClusterTopologyRefreshOptions$RefreshTrigger/values))]
+
+    (testing "legacy enabling all adaptive refresh triggers"
+      (let [topology-options (.build
+                               ^ClusterTopologyRefreshOptions$Builder
+                               (#'conn/enable-adaptive-refresh-triggers
+                                 (ClusterTopologyRefreshOptions/builder)
+                                 {:enable-adaptive-refresh-trigger :all}))]
+        (is (= all-refresh-triggers
+               (set (.getAdaptiveRefreshTriggers topology-options))))))
+
+    (testing "enabling all adaptive refresh triggers"
+      (let [topology-options (.build
+                               ^ClusterTopologyRefreshOptions$Builder
+                               (#'conn/enable-adaptive-refresh-triggers
+                                 (ClusterTopologyRefreshOptions/builder)
+                                 {:enable-all-adaptive-refresh-triggers true}))]
+        (is (= all-refresh-triggers
+               (set (.getAdaptiveRefreshTriggers topology-options))))))
+
+    (testing "enabling exactly provided adaptive triggers"
+      (let [refresh-triggers #{:moved-redirect :ask-redirect}
+            topology-options (.build
+                               ^ClusterTopologyRefreshOptions$Builder
+                               (#'conn/enable-adaptive-refresh-triggers
+                                 (ClusterTopologyRefreshOptions/builder)
+                                 {:enable-adaptive-refresh-triggers refresh-triggers}))]
+        (is (= (->> refresh-triggers (map #'conn/kw->rtrigger) (set))
+               (set (.getAdaptiveRefreshTriggers topology-options))))))
+
+    (testing "legacy enabling exactly provided adaptive triggers"
+      (let [refresh-triggers #{:moved-redirect :ask-redirect}
+            topology-options (.build
+                               ^ClusterTopologyRefreshOptions$Builder
+                               (#'conn/enable-adaptive-refresh-triggers
+                                 (ClusterTopologyRefreshOptions/builder)
+                                 {:enable-adaptive-refresh-trigger refresh-triggers}))]
+        (is (= (->> refresh-triggers (map #'conn/kw->rtrigger) (set))
+               (set (.getAdaptiveRefreshTriggers topology-options))))))
+
+    (testing "with not valid option"
+      (is (thrown? ExceptionInfo
+                   (#'conn/enable-adaptive-refresh-triggers
+              (ClusterTopologyRefreshOptions/builder)
+              {:enable-adaptive-refresh-trigger :broken}))))))
