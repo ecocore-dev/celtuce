@@ -6,7 +6,7 @@
 (def ^:private redis-server-url  "redis://localhost:6379")
 (def ^:private redis-cluster-url "redis://localhost:30001")
 
-(deftest redis-connector-options-test
+(deftest ^:integration redis-connector-options-test
 
   (testing "default options for redis-server"
     (conn/redis-server
@@ -47,7 +47,9 @@
       :ssl-options
       {:provider :jdk}
       ;; specific cluster options
-      :validate-cluster-node-membership       true
+      :validate-cluster-node-membership       false
+      :node-filter                            (fn [{node-flags :flags :as _cluster-node}]
+                                                (not-any? node-flags [:fail :eventual-fail :handshake :noaddr]))
       :max-redirects                          5
       :topology-refresh-options
       {:enable-periodic-refresh               false
@@ -57,4 +59,3 @@
        :enable-adaptive-refresh-trigger       #{}
        :adaptive-refresh-triggers-timeout     {:timeout 30 :unit :seconds}
        :refresh-triggers-reconnect-attempts   5}})))
-
