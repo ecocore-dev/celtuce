@@ -28,7 +28,7 @@
    RedisInstance$Role/SENTINEL :sentinel
    RedisInstance$Role/UPSTREAM :upstream})
 
-(defn enum->kw!
+(defn enum->kw
   "Converts Java enum to keyword using provided mapping.
    Throws an exception if the enum value is not found in the mapping."
   [mapping ^Enum e]
@@ -41,11 +41,11 @@
    Returns a map containing node flags, ID, role, slot status, and connection state."
   [^RedisClusterNode cluster-node]
   {:flags        (->> (.getFlags cluster-node)
-                      (map #(enum->kw! flag->kw %))
+                      (map #(enum->kw flag->kw %))
                       (set))
    :id           (.getNodeId cluster-node)
    :role         (some->> cluster-node
                           (.getRole)
-                          (enum->kw! role->kw))
+                          (enum->kw role->kw))
    :has-no-slots (.hasNoSlots cluster-node)
    :is-connected (.isConnected cluster-node)})
