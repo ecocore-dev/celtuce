@@ -210,7 +210,7 @@
 
 (defn- cluster-topo-refresh-options
   "Internal helper to build ClusterTopologyRefreshOptions,
-  used by b-cluster-client-options"
+   used by b-cluster-client-options."
   ^ClusterTopologyRefreshOptions
   [opts]
   (cond-> (ClusterTopologyRefreshOptions/builder)
@@ -220,20 +220,26 @@
     (.enablePeriodicRefresh
      (Duration/of (-> opts :refresh-period :period)
                   (-> opts :refresh-period :unit kw->cunit)))
+
     (contains? opts :close-stale-connections)
     (.closeStaleConnections (:close-stale-connections opts))
+
     (contains? opts :dynamic-refresh-sources)
     (.dynamicRefreshSources (:dynamic-refresh-sources opts))
+
     (contains? opts :enable-adaptive-refresh-trigger)
     (enable-adaptive-refresh-triggers opts)
+
     (contains? opts :adaptive-refresh-triggers-timeout)
     (.adaptiveRefreshTriggersTimeout
      (Duration/of
       (-> opts :adaptive-refresh-triggers-timeout :timeout)
       (-> opts :adaptive-refresh-triggers-timeout :unit kw->cunit)))
+
     (contains? opts :refresh-triggers-reconnect-attempts)
     (.refreshTriggersReconnectAttempts (:refresh-triggers-reconnect-attempts opts))
-    true (.build)))
+
+    :always (.build)))
 
 
 (defn- cluster-node-filter
