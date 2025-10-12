@@ -4,14 +4,24 @@
    [celtuce.connector :as conn])
   (:import
     (clojure.lang ExceptionInfo)
+    (io.lettuce.core TimeoutOptions TimeoutOptions$DefaultTimeoutSource TimeoutOptions$FixedTimeoutSource)
     (io.lettuce.core.cluster
       ClusterTopologyRefreshOptions
       ClusterTopologyRefreshOptions$Builder
-      ClusterTopologyRefreshOptions$RefreshTrigger)))
+      ClusterTopologyRefreshOptions$RefreshTrigger)
+    (io.lettuce.core.protocol CommandType RedisCommand)))
 
 
 (def ^:private redis-server-url  "redis://localhost:6379")
 (def ^:private redis-cluster-url "redis://localhost:30001")
+
+
+(defn mock-redis-command
+  "Creates a minimal RedisCommand mock with the given CommandType."
+  [^CommandType type]
+  (reify RedisCommand
+    (getType [_] type)))
+
 
 (deftest ^:integration redis-connector-options-test
 
@@ -114,3 +124,52 @@
                    (#'conn/enable-adaptive-refresh-triggers
               (ClusterTopologyRefreshOptions/builder)
               {:enable-adaptive-refresh-trigger :broken}))))))
+
+(deftest ^:unit test-timeout-options
+  (testing "empty options creates valid TimeoutOptions with defaults"
+    (is (instance? TimeoutOptions (#'conn/timeout-options {})))
+    (is (not (.isTimeoutCommands ^TimeoutOptions (#'conn/timeout-options {})))))
+
+  (testing "timeout-commands flag is correctly set"
+    (is (.isTimeoutCommands
+          ^TimeoutOptions
+          (#'conn/timeout-options {:fixed-timeout {:timeout 5 :unit :seconds}
+                                   :timeout-commands true})))
+    (is (not (.isTimeoutCommands
+               ^TimeoutOptions
+               (#'conn/timeout-options {:fixed-timeout {:timeout 5 :unit :seconds}
+                                        :timeout-commands false})))))
+
+  (testing "fixed timeout duration is correctly set"
+    (let [timeout-options (#'conn/timeout-options
+                            {:fixed-timeout    {:timeout 100 :unit :nanoseconds}
+                             :timeout-commands true})
+          timeout-source (.getSource ^TimeoutOptions timeout-options)]
+      (is (instance? TimeoutOptions$FixedTimeoutSource timeout-source))
+      (is (= 100 (.getTimeout timeout-source nil)))))
+
+  (testing "connection-timeout creates DefaultTimeoutSource"
+    (is (instance?
+          TimeoutOptions$DefaultTimeoutSource
+          (.getSource ^TimeoutOptions (#'conn/timeout-options {:connection-timeout true})))))
+
+  (testing "get-timeout uses custom timeout function"
+    (let [custom-timeouts {:get 1000
+                           :set 2000
+                           :del 500}
+          timeout-opts (#'conn/timeout-options
+                         {:get-timeout (fn [command]
+                                         (get custom-timeouts command))})
+          timeout-source (.getSource ^TimeoutOptions timeout-opts)]
+      (is (= 1000 (.getTimeout timeout-source (mock-redis-command CommandType/GET))))
+      (is (= 2000 (.getTimeout timeout-source (mock-redis-command CommandType/SET))))
+      (is (= 500 (.getTimeout timeout-source (mock-redis-command CommandType/DEL))))))
+
+  (testing "get-timeout throws NPE for unknown commands"
+    (let [custom-timeouts {:get 1000}
+          timeout-opts (#'conn/timeout-options
+                         {:get-timeout (fn [command]
+                                         (get custom-timeouts command))})
+          timeout-source (.getSource ^TimeoutOptions timeout-opts)]
+      (is (thrown? NullPointerException
+                   (.getTimeout timeout-source (mock-redis-command CommandType/SET)))))))
