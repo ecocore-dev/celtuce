@@ -142,20 +142,29 @@
     ;; finally, build
     true (.build)))
 
+
 (defn- timeout-options
   "Internal helper to build TimeoutOptions, used by b-client-options"
   ^TimeoutOptions
-  [opts]
+  [{:keys [fixed-timeout] :as opts}]
   (cond-> (TimeoutOptions/builder)
-    (and (contains? (:fixed-timeout opts) :timeout)
-         (contains? (:fixed-timeout opts) :unit))
+    (and (contains? fixed-timeout :timeout)
+         (contains? fixed-timeout :unit))
     (.fixedTimeout
-     (Duration/of (-> opts :fixed-timeout :timeout) (kw->cunit (-> opts :fixed-timeout :unit))))
+      (Duration/of
+        (:timeout fixed-timeout)
+        (-> fixed-timeout
+            :unit
+            (kw->cunit))))
+
     (contains? opts :timeout-commands)
     (.timeoutCommands (:timeout-commands opts))
+
     (true? (:connection-timeout opts))
     (.connectionTimeout)
-    true (.build)))
+
+    :always (.build)))
+
 
 (defn- b-client-options
   "Sets up a ClientOptions builder from a map of options"
