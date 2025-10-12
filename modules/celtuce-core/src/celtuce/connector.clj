@@ -153,6 +153,8 @@
      (Duration/of (-> opts :fixed-timeout :timeout) (kw->cunit (-> opts :fixed-timeout :unit))))
     (contains? opts :timeout-commands)
     (.timeoutCommands (:timeout-commands opts))
+    (true? (:connection-timeout opts))
+    (.connectionTimeout)
     true (.build)))
 
 (defn- b-client-options
