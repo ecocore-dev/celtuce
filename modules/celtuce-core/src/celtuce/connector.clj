@@ -1,6 +1,7 @@
 (ns celtuce.connector
   (:require
     [celtuce.args.cluster-node :as node]
+    [celtuce.args.command :as command]
     [celtuce.codec :refer [nippy-codec]]
     [celtuce.commands :as cmds]
     [clojure.java.io :as io])
@@ -8,7 +9,7 @@
     (io.lettuce.core
       ClientOptions
       ClientOptions$Builder ClientOptions$DisconnectedBehavior RedisClient
-      SocketOptions SslOptions TimeoutOptions)
+      SocketOptions SslOptions TimeoutOptions TimeoutOptions$TimeoutSource)
     (io.lettuce.core.api StatefulRedisConnection)
     (io.lettuce.core.cluster RedisClusterClient)
     (io.lettuce.core.cluster.api StatefulRedisClusterConnection)
@@ -18,6 +19,7 @@
     (io.lettuce.core.cluster.models.partitions RedisClusterNode)
     (io.lettuce.core.codec RedisCodec)
     (io.lettuce.core.dynamic RedisCommandFactory)
+    (io.lettuce.core.protocol RedisCommand)
     (io.lettuce.core.pubsub RedisPubSubListener StatefulRedisPubSubConnection)
     (io.lettuce.core.resource ClientResources)
     (java.time Duration)
@@ -143,6 +145,16 @@
     true (.build)))
 
 
+(defn- timeout-source
+  [timeout-fn]
+  (proxy [TimeoutOptions$TimeoutSource] []
+    (getTimeout [^RedisCommand command]
+      (-> command
+          (.getType)
+          (command/command-type->kw)
+          (timeout-fn)))))
+
+
 (defn- timeout-options
   "Internal helper to build TimeoutOptions, used by b-client-options"
   ^TimeoutOptions
@@ -162,6 +174,12 @@
 
     (true? (:connection-timeout opts))
     (.connectionTimeout)
+
+    (contains? opts :get-timeout)
+    (.timeoutSource
+      (-> opts
+          :get-timeout
+          (timeout-source)))
 
     :always (.build)))
 
