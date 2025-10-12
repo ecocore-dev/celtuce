@@ -4,6 +4,7 @@
    [celtuce.connector :as conn])
   (:import
     (clojure.lang ExceptionInfo)
+    (io.lettuce.core TimeoutOptions TimeoutOptions$DefaultTimeoutSource TimeoutOptions$FixedTimeoutSource)
     (io.lettuce.core.cluster
       ClusterTopologyRefreshOptions
       ClusterTopologyRefreshOptions$Builder
@@ -114,3 +115,24 @@
                    (#'conn/enable-adaptive-refresh-triggers
               (ClusterTopologyRefreshOptions/builder)
               {:enable-adaptive-refresh-trigger :broken}))))))
+
+(deftest ^:unit test-timeout-options
+  (testing "empty options creates valid TimeoutOptions with defaults"
+    (is (instance? TimeoutOptions (#'conn/timeout-options {})))
+    (is (not (.isTimeoutCommands (#'conn/timeout-options {})))))
+
+  (testing "timeout-commands flag is correctly set"
+    (is (.isTimeoutCommands
+          (#'conn/timeout-options {:fixed-timeout {:timeout 5 :unit :seconds}
+                                   :timeout-commands true})))
+    (is (not (.isTimeoutCommands
+               (#'conn/timeout-options {:fixed-timeout {:timeout 5 :unit :seconds}
+                                        :timeout-commands false})))))
+
+  (testing "fixed timeout duration is correctly set"
+    (let [timeout-source (-> {:fixed-timeout    {:timeout 100 :unit :nanoseconds}
+                              :timeout-commands true}
+                             (#'conn/timeout-options)
+                             (.getSource))]
+      (is (instance? TimeoutOptions$FixedTimeoutSource timeout-source))
+      (is (= 100 (.getTimeout timeout-source nil))))))
