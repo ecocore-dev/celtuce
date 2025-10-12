@@ -34,7 +34,7 @@
                             (sut/enum->kw time-unit->kw TimeUnit/MINUTES))))))
 
 
-(deftest test-node->map
+(deftest ^:unit test-node->map
   (testing "returns stable shape & types"
     (let [generic-node (-> {:id "generic" :connected? true}
                            (redis-cluster-node)
