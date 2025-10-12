@@ -135,4 +135,9 @@
                              (#'conn/timeout-options)
                              (.getSource))]
       (is (instance? TimeoutOptions$FixedTimeoutSource timeout-source))
-      (is (= 100 (.getTimeout timeout-source nil))))))
+      (is (= 100 (.getTimeout timeout-source nil)))))
+
+  (testing "connection-timeout creates DefaultTimeoutSource"
+    (is (instance?
+          TimeoutOptions$DefaultTimeoutSource
+          (.getSource (#'conn/timeout-options {:connection-timeout true}))))))
