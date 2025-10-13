@@ -80,8 +80,14 @@
        (.release ~kryo-pool kryo#)
        res#)))
 
-(defn carbonite-codec 
-  "Creates a Redis codec using Carbonite for Kryo-based serialization."
+(defn ^:deprecated carbonite-codec 
+  "Creates a Redis codec using Carbonite for Kryo-based serialization.
+  
+  DEPRECATED: This codec relies on com.twitter/carbonite which has not been updated 
+  since 2014 and uses outdated dependencies (Kryo 3, Java 1.6). Please migrate to 
+  nippy-codec instead, which is actively maintained and provides better performance.
+  
+  This function will be removed in a future major version."
   ([]
    (carbonite-codec (fn [] (default-registry))))
   ([kryo-factory]

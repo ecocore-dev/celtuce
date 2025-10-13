@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Extended cluster client options with node filtering capabilities.
 - Added `RedisClusterNode` → map adapter for enhanced node filtering functionality.
 
+### Deprecated
+- **`carbonite-codec`**: Marked as deprecated due to outdated dependencies (Carbonite hasn't been updated since 2014, uses Kryo 3 and Java 1.6). Users should migrate to `nippy-codec`, which is actively maintained, provides better performance, and is already the default codec in Celtuce. The `carbonite-codec` will be removed in a future major version.
+
 
 ## [0.4.4] - 2025-09-19
 ### Changed
