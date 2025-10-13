@@ -5,18 +5,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [0.5.0-SNAPSHOT] - Unreleased
+## [0.5.0] - 2025-10-13
 ### Added
-- Support for `:node-filter` option in `ClusterClientOptions`.
-- Introduced idiomatic Clojure map representation of cluster nodes for filtering.
-- Applications can now exclude unhealthy nodes more easily, improving cluster reliability while keeping the API consistent with other Celtuce options.
+- **Node filtering**:
+    - Added support for the `:node-filter` option in `ClusterClientOptions`.
+    - Introduced an idiomatic Clojure map representation of cluster nodes for filtering.
+    - Applications can now exclude unhealthy nodes more easily,
+      improving cluster reliability while keeping the API consistent with other Celtuce options.
+- **Command timeout options**: Added support for flexible timeout configurations in `timeout-options`:
+    - `:connection-timeout` — apply the connection timeout as the default timeout for commands.
+    - `:get-timeout` — custom timeout source function that receives a command type as a kebab-case
+      keyword (e.g. `:get`, `:set`) and returns a timeout in milliseconds, enabling per-command timeout strategies.
+- Added support for the `:enable-all-adaptive-refresh-triggers` option in
+  cluster topology refresh configuration.
 
-### Changed
-- Extended cluster client options with node filtering capabilities.
-- Added `RedisClusterNode` → map adapter for enhanced node filtering functionality.
+### Fixed
+- Fixed handling of the `:all` keyword in adaptive refresh triggers to
+  avoid attempting sequence operations on keywords.
 
 ### Deprecated
-- **`carbonite-codec`**: Marked as deprecated due to outdated dependencies (Carbonite hasn't been updated since 2014, uses Kryo 3 and Java 1.6). Users should migrate to `nippy-codec`, which is actively maintained, provides better performance, and is already the default codec in Celtuce. The `carbonite-codec` will be removed in a future major version.
+- **`carbonite-codec`**: marked as deprecated due to outdated dependencies
+  (Carbonite hasn't been updated since 2014, uses Kryo 3 and Java 1.6).  
+  Users should migrate to `nippy-codec`, which is actively maintained,
+  provides better performance, and is already the default codec in Celtuce.  
+  The `carbonite-codec` will be removed in a future major release.
 
 
 ## [0.4.4] - 2025-09-19
